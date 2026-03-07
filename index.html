@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tenga-Express BF 🇧🇫</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Auth Overlay -->
+    <div id="auth-overlay">
+        <div class="auth-container">
+            <div class="brand-logo">
+                <i class="fas fa-utensils"></i>
+                TENGA-EXPRESS BF
+            </div>
+            
+            <div id="login-box" class="auth-form">
+                <h3>Connexion</h3>
+                <div class="form-group">
+                    <label for="login-id">Identifiant</label>
+                    <input type="text" id="login-id" class="form-control" placeholder="Votre identifiant">
+                </div>
+                <div class="form-group">
+                    <label for="login-pwd">Mot de passe</label>
+                    <input type="password" id="login-pwd" class="form-control" placeholder="Votre mot de passe">
+                </div>
+                <button class="btn btn-primary" onclick="actionLogin()" id="login-btn">
+                    <i class="fas fa-sign-in-alt"></i> SE CONNECTER
+                </button>
+            </div>
+
+            <div id="register-box" class="auth-form" style="display: none;">
+                <h3>Inscription</h3>
+                <div class="form-group">
+                    <label for="reg-name">Nom complet</label>
+                    <input type="text" id="reg-name" class="form-control" placeholder="Votre nom complet">
+                </div>
+                <div class="form-group">
+                    <label for="reg-id">Identifiant</label>
+                    <input type="text" id="reg-id" class="form-control" placeholder="Choisir un identifiant">
+                </div>
+                <div class="form-group">
+                    <label for="reg-whatsapp">
+                        <i class="fab fa-whatsapp" style="color: #25D366;"></i> N°WhatsApp
+                    </label>
+                    <input type="tel" id="reg-whatsapp" class="form-control" placeholder="+226 70 00 00 00">
+                </div>
+                <div class="form-group">
+                    <label for="reg-pwd">Mot de passe</label>
+                    <input type="password" id="reg-pwd" class="form-control" placeholder="Créer un mot de passe">
+                </div>
+                <button class="btn btn-success" onclick="actionRegister()" id="register-btn">
+                    <i class="fab fa-whatsapp"></i> CRÉER MON COMPTE
+                </button>
+            </div>
+
+            <p class="auth-toggle" id="auth-toggle-text">
+                Pas de compte ? <a href="javascript:toggleAuth()">S'inscrire</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- App Header -->
+    <div class="app-header">
+        <div class="header-title">🇧🇫 TENGA-EXPRESS BF</div>
+        <div class="header-actions">
+            <i class="fas fa-search header-icon" onclick="switchTab('home')" title="Rechercher"></i>
+            <div class="cart-badge" onclick="switchTab('cart')">
+                <i class="fas fa-shopping-cart header-icon" title="Panier"></i>
+                <span id="cart-badge-count" class="cart-count" style="display:none;">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screens -->
+    <div id="screen-home" class="screen active">
+        <h2 class="screen-title">Restaurants</h2>
+        <div class="search-bar">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="search-input" class="search-input" placeholder="Rechercher un plat..." onkeyup="handleSearch()">
+        </div>
+        <div id="liste-restos" class="resto-list"></div>
+    </div>
+
+    <div id="screen-cart" class="screen">
+        <h2 class="screen-title">Mon Panier</h2>
+        <div id="cart-list" class="cart-list"></div>
+        <div id="cart-total-area" class="cart-total" style="display:none;">
+            <div class="cart-total-row">
+                <span class="cart-total-label">Total</span>
+                <span class="cart-total-value"><span id="cart-sum">0</span> F CFA</span>
+            </div>
+            <button class="btn btn-primary" onclick="showPaymentModal()" id="checkout-btn">
+                <i class="fas fa-credit-card"></i> PAYER MAINTENANT
+            </button>
+        </div>
+    </div>
+
+    <div id="screen-history" class="screen">
+        <h2 class="screen-title">Historique</h2>
+        <div id="history-list" class="history-list"></div>
+    </div>
+
+    <div id="screen-profile" class="screen">
+        <div class="profile-container">
+            <!-- Cover et Avatar -->
+            <div class="profile-cover">
+                <div class="profile-avatar-wrapper">
+                    <div class="profile-avatar-modern" id="profile-avatar-text">👤</div>
+                </div>
+            </div>
+            
+            <!-- Informations -->
+            <div class="profile-info-modern">
+                <h2 class="profile-name-modern" id="profile-name-modern">...</h2>
+                <span class="profile-id-modern" id="profile-id-modern">@utilisateur</span>
+                
+                <div class="profile-badges">
+                    <div class="badge">
+                        <i class="fas fa-calendar-alt"></i>
+                        Membre depuis 2024
+                    </div>
+                    <div class="badge whatsapp" id="profile-whatsapp-badge">
+                        <i class="fab fa-whatsapp"></i>
+                        <span id="profile-whatsapp-modern">Non renseigné</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Statistiques -->
+            <div class="stats-grid-modern">
+                <div class="stat-card-modern">
+                    <div class="stat-icon-modern">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                    <div class="stat-value-modern" id="stat-commandes">0</div>
+                    <div class="stat-label-modern">Commandes</div>
+                </div>
+                <div class="stat-card-modern">
+                    <div class="stat-icon-modern">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="stat-value-modern" id="stat-depense">0 F</div>
+                    <div class="stat-label-modern">Dépensé</div>
+                </div>
+                <div class="stat-card-modern">
+                    <div class="stat-icon-modern">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-value-modern" id="stat-moyenne">0 F</div>
+                    <div class="stat-label-modern">Panier moyen</div>
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="actions-grid-modern">
+                <div class="action-card-modern" onclick="showInscriptionRestaurant()">
+                    <div class="action-icon-modern">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <h4 class="action-title-modern">Devenir Partenaire</h4>
+                    <p class="action-desc-modern">Inscrivez votre restaurant</p>
+                </div>
+                <div class="action-card-modern" onclick="showInscriptionLivreur()">
+                    <div class="action-icon-modern">
+                        <i class="fas fa-motorcycle"></i>
+                    </div>
+                    <h4 class="action-title-modern">Devenir Livreur</h4>
+                    <p class="action-desc-modern">Rejoignez notre équipe</p>
+                </div>
+            </div>
+            
+            <!-- Boutons de test pour les dashboards -->
+            <div class="dashboard-test-buttons">
+                <button class="btn-modern btn-modern-primary" onclick="showRestoDashboard()">
+                    <i class="fas fa-store"></i> Dashboard Restaurant
+                </button>
+                <button class="btn-modern btn-modern-primary" onclick="showLivreurDashboard()">
+                    <i class="fas fa-motorcycle"></i> Dashboard Livreur
+                </button>
+            </div>
+            
+            <!-- Actions du profil -->
+            <div class="profile-actions-modern">
+                <button class="btn-modern btn-modern-secondary" onclick="editerProfil()">
+                    <i class="fas fa-edit"></i> MODIFIER
+                </button>
+                <button class="btn-modern btn-modern-secondary" onclick="deconnexion()">
+                    <i class="fas fa-sign-out-alt"></i> DÉCONNEXION
+                </button>
+            </div>
+            
+            <!-- Admin Link -->
+            <div class="admin-link-modern" onclick="accesAdmin()">
+                <i class="fas fa-lock"></i> Espace Administrateur
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen Inscriptions -->
+    <div id="screen-inscriptions" class="screen">
+        <div class="screen-header">
+            <button class="btn-back" onclick="switchTab('profile')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2 class="screen-title-modern" id="inscription-screen-title">Inscription</h2>
+            <div style="width: 40px;"></div>
+        </div>
+
+        <div class="inscriptions-container">
+            <!-- Formulaire Restaurant -->
+            <div id="restaurant-form-screen" class="form-screen" style="display: none;">
+                <div class="form-screen-header">
+                    <button class="btn-back-form" onclick="switchTab('profile')">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h3><i class="fas fa-store"></i> Inscription Restaurant</h3>
+                </div>
+
+                <div class="progress-modern">
+                    <div class="progress-fill-modern" id="resto-progress-screen" style="width:0%"></div>
+                </div>
+                <div class="progress-percent">
+                    <span id="resto-progress-percent-screen">0%</span> complété
+                </div>
+                
+                <div class="form-screen-content">
+                    <div class="input-group-modern">
+                        <label><i class="fas fa-store"></i> Nom du restaurant *</label>
+                        <input type="text" id="resto-nom-screen" class="input-modern" placeholder="Ex: Chez Amadou" oninput="updateRestoProgressScreen()">
+                    </div>
+
+                    <div class="input-group-modern">
+                        <label><i class="fab fa-whatsapp"></i> WhatsApp restaurant *</label>
+                        <input type="tel" id="resto-whatsapp-screen" class="input-modern" placeholder="+226 70 00 00 00" oninput="updateRestoProgressScreen()">
+                    </div>
+
+                    <div class="input-group-modern">
+                        <label><i class="fas fa-user"></i> Numéro du propriétaire *</label>
+                        <input type="tel" id="resto-proprio-screen" class="input-modern" placeholder="+226 70 00 00 00" oninput="updateRestoProgressScreen()">
+                    </div>
+
+                    <div class="input-group-modern">
+                        <label><i class="fas fa-map-marker-alt"></i> Adresse *</label>
+                        <input type="text" id="resto-adresse-screen" class="input-modern" placeholder="Ouagadougou, secteur ..." oninput="updateRestoProgressScreen()">
+                    </div>
+
+                    <div class="input-group-modern">
+                        <label><i class="fas fa-id-card"></i> CNIB (PDF) *</label>
+                        <div class="file-upload-modern" onclick="document.getElementById('resto-cnib-screen').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Cliquez pour télécharger la CNIB</p>
+                            <input type="file" id="resto-cnib-screen" accept=".pdf" style="display:none;" onchange="updateFileNameScreen(this, 'resto-cnib-name-screen', null, 'resto')">
+                            <div id="resto-cnib-name-screen" class="file-name-modern"></div>
+                        </div>
+                    </div>
+
+                    <div class="input-group-modern">
+                        <label><i class="fas fa-camera"></i> Photo du restaurant *</label>
+                        <div class="file-upload-modern" onclick="document.getElementById('resto-photo-screen').click()">
+                            <i class="fas fa-camera"></i>
+                            <p>Cliquez pour ajouter une photo</p>
+                            <input type="file" id="resto-photo-screen" accept="image/*" style="display:none;" onchange="updateFileNameScreen(this, 'resto-photo-name-screen', 'resto-photo-preview-screen', 'resto')">
+                            <div id="resto-photo-name-screen" class="file-name-modern"></div>
+                            <img id="resto-photo-preview-screen" class="file-preview" style="display: none;">
+                        </div>
+                    </div>
+
+                    <div class="contract-preview-modern">
+                        <h5><i class="fas fa-file-contract"></i> Conditions d'inscription</h5>
+                        <ul class="conditions-list-modern">
+                            <li><i class="fas fa-check-circle"></i> Être majeur (18 ans ou plus)</li>
+                            <li><i class="fas fa-check-circle"></i> Fournir une CNIB valide</li>
+                            <li><i class="fas fa-check-circle"></i> Commission : 15% par commande</li>
+                            <li><i class="fas fa-check-circle"></i> Paiement chaque semaine</li>
+                        </ul>
+                        
+                        <div class="checkbox-modern" onclick="document.getElementById('resto-accept-screen').click()">
+                            <input type="checkbox" id="resto-accept-screen" onchange="updateRestoProgressScreen()">
+                            <label for="resto-accept-screen">J'accepte les conditions d'inscription</label>
+                        </div>
+                        
+                        <button class="btn-modern btn-modern-secondary" onclick="showFullContract('restaurant')">
+                            <i class="fas fa-file-contract"></i> Lire le contrat complet
+                        </button>
+                    </div>
+
+                    <button class="btn-modern btn-modern-primary" onclick="validerInscriptionRestaurantScreen()" id="resto-submit-screen" disabled>
+                        <i class="fas fa-paper-plane"></i> SOUMETTRE MA DEMANDE
+                    </button>
+                </div>
+            </div>
+
+            <!-- Formulaire Livreur -->
+            <div id="livreur-form-screen" class="form-screen" style="display: none;">
+                <div class="form-screen-header">
+                    <button class="btn-back-form" onclick="switchTab('profile')">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h3><i class="fas fa-motorcycle"></i> Inscription Livreur</h3>
+                </div>
+
+                <div class="progress-modern">
+                    <div class="progress-fill-modern" id="livreur-progress-screen" style="width:0%"></div>
+                </div>
+                <div class="progress-percent">
+                    <span id="livreur-progress-percent-screen">0%</span> complété
+                </div>
+                
+                <div class="form-screen-content">
+                    <div class="input-group-modern">
+                        <label><i class="fas fa-user"></i> Nom complet *</label>
+                        <input type="text" id="livreur-nom-screen" class="input-modern" placeholder="Nom et prénoms" oninput="updateLivreurProgressScreen()">
+                    </div>
+
+                    <div class="input-group-modern">
+                        <label><i class="fas fa-calendar"></i> Âge *</label>
+                        <input type="number" id="livreur-age-screen" class="input-modern" min="18" max="60" placeholder="18" oninput="updateLivreurProgressScreen()">
+                    </div>
+
+                    <div class="input-group-modern">
+                        <label><i class="fas fa-map-pin"></i> Quartier *</label>
+                        <input type="text" id="livreur-quartier-screen" class="input-modern" placeholder="Ex: Dassasgho" oninput="updateLivreurProgressScreen()">
+                    </div>
+
+                    <div class="input-group-modern">
+                        <label><i class="fab fa-whatsapp"></i> WhatsApp *</label>
+                        <input type="tel" id="livreur-whatsapp-screen" class="input-modern" placeholder="+226 70 00 00 00" oninput="updateLivreurProgressScreen()">
+                    </div>
+
+                    <div class="input-group-modern">
+                        <label><i class="fas fa-phone-alt"></i> Téléphone 2 (optionnel)</label>
+                        <input type="tel" id="livreur-tel2-screen" class="input-modern" placeholder="+226 70 00 00 00">
+                    </div>
+
+                    <div class="input-group-modern">
+                        <label><i class="fas fa-user-friends"></i> Contact urgence *</label>
+                        <input type="text" id="livreur-contact-screen" class="input-modern" placeholder="Nom de la personne" oninput="updateLivreurProgressScreen()">
+                    </div>
+
+                    <div class="input-group-modern">
+                        <label><i class="fas fa-phone"></i> Téléphone urgence *</label>
+                        <input type="tel" id="livreur-contact-tel-screen" class="input-modern" placeholder="+226 70 00 00 00" oninput="updateLivreurProgressScreen()">
+                    </div>
+
+                    <div class="input-group-modern">
+                        <label><i class="fas fa-id-card"></i> CNIB (PDF) *</label>
+                        <div class="file-upload-modern" onclick="document.getElementById('livreur-cnib-screen').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Cliquez pour télécharger votre CNIB</p>
+                            <input type="file" id="livreur-cnib-screen" accept=".pdf" style="display:none;" onchange="updateFileNameScreen(this, 'livreur-cnib-name-screen', null, 'livreur')">
+                            <div id="livreur-cnib-name-screen" class="file-name-modern"></div>
+                        </div>
+                    </div>
+
+                    <div class="input-group-modern">
+                        <label><i class="fas fa-camera"></i> Photo d'identité *</label>
+                        <div class="file-upload-modern" onclick="document.getElementById('livreur-photo-screen').click()">
+                            <i class="fas fa-camera"></i>
+                            <p>Cliquez pour ajouter votre photo</p>
+                            <input type="file" id="livreur-photo-screen" accept="image/*" style="display:none;" onchange="updateFileNameScreen(this, 'livreur-photo-name-screen', 'livreur-photo-preview-screen', 'livreur')">
+                            <div id="livreur-photo-name-screen" class="file-name-modern"></div>
+                            <img id="livreur-photo-preview-screen" class="file-preview" style="display: none;">
+                        </div>
+                    </div>
+
+                    <div class="input-group-modern">
+                        <label><i class="fas fa-motorcycle"></i> Véhicule</label>
+                        <select id="livreur-vehicule-screen" class="input-modern">
+                            <option value="moto">Moto / Scooter</option>
+                            <option value="velo">Vélo</option>
+                            <option value="voiture">Voiture</option>
+                            <option value="autre">Autre</option>
+                        </select>
+                    </div>
+
+                    <div class="contract-preview-modern">
+                        <h5><i class="fas fa-file-contract"></i> Conditions livreur</h5>
+                        <ul class="conditions-list-modern">
+                            <li><i class="fas fa-check-circle"></i> Être majeur (18 ans minimum)</li>
+                            <li><i class="fas fa-check-circle"></i> Avoir une pièce d'identité</li>
+                            <li><i class="fas fa-check-circle"></i> Commission : 70% par livraison</li>
+                            <li><i class="fas fa-check-circle"></i> Disponibilité 4h/jour minimum</li>
+                        </ul>
+                        
+                        <div class="checkbox-modern" onclick="document.getElementById('livreur-accept-screen').click()">
+                            <input type="checkbox" id="livreur-accept-screen" onchange="updateLivreurProgressScreen()">
+                            <label for="livreur-accept-screen">J'accepte les conditions d'inscription</label>
+                        </div>
+                        
+                        <button class="btn-modern btn-modern-secondary" onclick="showFullContract('livreur')">
+                            <i class="fas fa-file-contract"></i> Lire le contrat complet
+                        </button>
+                    </div>
+
+                    <button class="btn-modern btn-modern-primary" onclick="validerInscriptionLivreurScreen()" id="livreur-submit-screen" disabled>
+                        <i class="fas fa-paper-plane"></i> SOUMETTRE MA DEMANDE
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen Dashboard Restaurant -->
+    <div id="screen-resto-dashboard" class="screen">
+        <div class="dashboard-header">
+            <button class="btn-back" onclick="switchTab('profile')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2 class="dashboard-title">
+                <i class="fas fa-store"></i>
+                Dashboard Restaurant
+            </h2>
+            <div class="header-actions">
+                <span class="status-badge active" id="resto-status">Actif</span>
+            </div>
+        </div>
+
+        <div class="dashboard-container">
+            <!-- Statistiques Restaurant -->
+            <div class="stats-grid-dashboard">
+                <div class="stat-card-dashboard">
+                    <div class="stat-icon-dashboard" style="background: rgba(239, 43, 45, 0.1); color: var(--bf-red);">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value-dashboard" id="resto-commandes">0</span>
+                        <span class="stat-label-dashboard">Commandes aujourd'hui</span>
+                    </div>
+                </div>
+                <div class="stat-card-dashboard">
+                    <div class="stat-icon-dashboard" style="background: rgba(0, 158, 73, 0.1); color: var(--bf-green);">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value-dashboard" id="resto-chiffre">0 F</span>
+                        <span class="stat-label-dashboard">Chiffre d'affaires</span>
+                    </div>
+                </div>
+                <div class="stat-card-dashboard">
+                    <div class="stat-icon-dashboard" style="background: rgba(252, 209, 22, 0.1); color: var(--bf-yellow);">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value-dashboard" id="resto-commandes-encours">0</span>
+                        <span class="stat-label-dashboard">Commandes en cours</span>
+                    </div>
+                </div>
+                <div class="stat-card-dashboard">
+                    <div class="stat-icon-dashboard" style="background: rgba(37, 211, 102, 0.1); color: var(--whatsapp);">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value-dashboard" id="resto-note">4.8</span>
+                        <span class="stat-label-dashboard">Note moyenne</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gains et revenus -->
+            <div class="gains-section">
+                <h3><i class="fas fa-chart-line"></i> Mes gains</h3>
+                <div class="gains-cards">
+                    <div class="gain-card">
+                        <div class="gain-label">Total des ventes</div>
+                        <div class="gain-value" id="resto-total-ventes">0 F</div>
+                    </div>
+                    <div class="gain-card">
+                        <div class="gain-label">Commission Tenga (15%)</div>
+                        <div class="gain-value" id="resto-commission">0 F</div>
+                    </div>
+                    <div class="gain-card">
+                        <div class="gain-label">Mon revenu net</div>
+                        <div class="gain-value net" id="resto-net">0 F</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Commandes en cours -->
+            <div class="commandes-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-clock"></i> Commandes en préparation</h3>
+                    <span class="badge-count" id="resto-count-preparation">0</span>
+                </div>
+                <div id="resto-commandes-liste" class="commandes-liste">
+                    <div class="empty-state">
+                        <i class="fas fa-check-circle"></i>
+                        <p>Aucune commande en cours</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Commandes prêtes -->
+            <div class="commandes-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-check-circle"></i> Commandes prêtes</h3>
+                    <span class="badge-count" id="resto-count-pretes">0</span>
+                </div>
+                <div id="resto-commandes-pretes" class="commandes-liste">
+                    <div class="empty-state">
+                        <i class="fas fa-smile"></i>
+                        <p>Aucune commande prête</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historique des paiements -->
+            <div class="paiements-section">
+                <h3><i class="fas fa-history"></i> Historique des paiements</h3>
+                <div id="resto-paiements-liste" class="paiements-liste">
+                    <div class="empty-state">
+                        <i class="fas fa-wallet"></i>
+                        <p>Aucun paiement pour le moment</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen Dashboard Livreur -->
+    <div id="screen-livreur-dashboard" class="screen">
+        <div class="dashboard-header">
+            <button class="btn-back" onclick="switchTab('profile')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2 class="dashboard-title">
+                <i class="fas fa-motorcycle"></i>
+                Dashboard Livreur
+            </h2>
+            <div class="header-actions">
+                <span class="status-badge active" id="livreur-status">En ligne</span>
+                <button class="btn-toggle-status" onclick="toggleLivreurStatus()">
+                    <i class="fas fa-power-off"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="dashboard-container">
+            <!-- Statistiques Livreur -->
+            <div class="stats-grid-dashboard">
+                <div class="stat-card-dashboard">
+                    <div class="stat-icon-dashboard" style="background: rgba(239, 43, 45, 0.1); color: var(--bf-red);">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value-dashboard" id="livreur-livraisons">0</span>
+                        <span class="stat-label-dashboard">Livraisons aujourd'hui</span>
+                    </div>
+                </div>
+                <div class="stat-card-dashboard">
+                    <div class="stat-icon-dashboard" style="background: rgba(0, 158, 73, 0.1); color: var(--bf-green);">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value-dashboard" id="livreur-gains">0 F</span>
+                        <span class="stat-label-dashboard">Gains du jour</span>
+                    </div>
+                </div>
+                <div class="stat-card-dashboard">
+                    <div class="stat-icon-dashboard" style="background: rgba(252, 209, 22, 0.1); color: var(--bf-yellow);">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value-dashboard" id="livreur-temps">25 min</span>
+                        <span class="stat-label-dashboard">Temps moyen</span>
+                    </div>
+                </div>
+                <div class="stat-card-dashboard">
+                    <div class="stat-icon-dashboard" style="background: rgba(37, 211, 102, 0.1); color: var(--whatsapp);">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value-dashboard" id="livreur-note">5.0</span>
+                        <span class="stat-label-dashboard">Note</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gains totaux -->
+            <div class="gains-section">
+                <h3><i class="fas fa-wallet"></i> Mes gains</h3>
+                <div class="gains-cards">
+                    <div class="gain-card">
+                        <div class="gain-label">Gains du jour</div>
+                        <div class="gain-value" id="livreur-gains-jour">0 F</div>
+                    </div>
+                    <div class="gain-card">
+                        <div class="gain-label">Gains de la semaine</div>
+                        <div class="gain-value" id="livreur-gains-semaine">0 F</div>
+                    </div>
+                    <div class="gain-card">
+                        <div class="gain-label">Gains du mois</div>
+                        <div class="gain-value net" id="livreur-gains-mois">0 F</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nouvelles livraisons disponibles -->
+            <div class="commandes-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-bell"></i> Livraisons disponibles</h3>
+                    <span class="badge-count" id="livreur-disponibles">0</span>
+                </div>
+                <div id="livreur-livraisons-dispo" class="commandes-liste">
+                    <div class="empty-state">
+                        <i class="fas fa-check-circle"></i>
+                        <p>Aucune livraison disponible</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Livraisons en cours -->
+            <div class="commandes-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-clock"></i> Livraisons en cours</h3>
+                    <span class="badge-count" id="livreur-encours">0</span>
+                </div>
+                <div id="livreur-livraisons-encours" class="commandes-liste">
+                    <div class="empty-state">
+                        <i class="fas fa-smile"></i>
+                        <p>Vous n'avez pas de livraison en cours</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historique des paiements -->
+            <div class="paiements-section">
+                <h3><i class="fas fa-history"></i> Historique des paiements</h3>
+                <div id="livreur-paiements-liste" class="paiements-liste">
+                    <div class="empty-state">
+                        <i class="fas fa-wallet"></i>
+                        <p>Aucun paiement pour le moment</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mini Cart Popup -->
+    <div id="mini-cart-popup" class="mini-cart-popup" style="display:none;">
+        <div class="mini-cart-header">
+            <span class="mini-cart-title">🛒 AJOUTÉ AU PANIER</span>
+            <span class="mini-cart-close" onclick="closeMiniCart()"><i class="fas fa-times"></i></span>
+        </div>
+        <div id="mini-cart-items" class="mini-cart-items"></div>
+        <div class="mini-cart-total">
+            <span>Total</span>
+            <span id="mini-cart-total">0 F CFA</span>
+        </div>
+        <div class="mini-cart-actions">
+            <button class="btn btn-outline" onclick="closeMiniCart()">Continuer</button>
+            <button class="btn btn-primary" onclick="goToCart()">Voir panier</button>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="payment-modal">
+        <div class="payment-content">
+            <button class="close-payment" onclick="closePaymentModal()"><i class="fas fa-times"></i></button>
+            <div class="payment-header">
+                <h3>Paiement</h3>
+                <div class="payment-amount" id="payment-amount">0 F CFA</div>
+            </div>
+            
+            <div class="payment-options">
+                <button class="money-btn orange" onclick="processPayment('orange')" id="payment-orange">
+                    <i class="fas fa-mobile-alt"></i> Orange Money
+                </button>
+                <button class="money-btn moov" onclick="processPayment('moov')" id="payment-moov">
+                    <i class="fas fa-mobile-alt"></i> Moov Money
+                </button>
+                <button class="money-btn wave" onclick="processPayment('wave')" id="payment-wave">
+                    <i class="fas fa-wave-square"></i> Wave
+                </button>
+                <button class="money-btn telecel" onclick="processPayment('telecel')" id="payment-telecel">
+                    <i class="fas fa-mobile-alt"></i> Telecel Money
+                </button>
+            </div>
+            
+            <div class="payment-footer">
+                <i class="fas fa-lock"></i> Paiement sécurisé
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour afficher le contrat complet -->
+    <div id="contract-modal" class="contract-modal">
+        <div class="contract-content">
+            <div class="contract-header">
+                <h3>Contrat de partenariat</h3>
+                <button class="contract-close" onclick="closeContractModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="contract-body" id="contract-body"></div>
+            <div class="contract-footer">
+                <button class="btn btn-outline" onclick="closeContractModal()">Fermer</button>
+                <button class="btn btn-primary" onclick="acceptContract()">J'accepte</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Modal -->
+    <div id="admin-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Administration</h3>
+                <button class="modal-close" onclick="document.getElementById('admin-modal').style.display='none'">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="adm-total">0F</div>
+                    <div class="stat-label">Total Général</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="adm-admin">0F</div>
+                    <div class="stat-label">Part Admin</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="adm-resto">0F</div>
+                    <div class="stat-label">Part Restaurants</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="adm-liv">0F</div>
+                    <div class="stat-label">Part Livreurs</div>
+                </div>
+            </div>
+            <div style="text-align: center; margin: 20px 0;">
+                <div style="font-size: 14px; color: var(--dark-light);">Nombre d'utilisateurs</div>
+                <div style="font-size: 28px; font-weight: 700; color: var(--bf-red);" id="adm-users">0</div>
+            </div>
+            <div id="admin-demandes" style="margin: 20px 0; padding: 15px; background: var(--primary-light); border-radius: var(--radius-md);">
+                <h4 style="color: var(--bf-red); margin-bottom: 10px;">Demandes en attente</h4>
+                <p><i class="fas fa-store"></i> Restaurants: <span id="adm-resto-demandes">0</span></p>
+                <p><i class="fas fa-motorcycle"></i> Livreurs: <span id="adm-livreur-demandes">0</span></p>
+                <button class="btn-small" onclick="validerInscriptions()">Valider les inscriptions</button>
+            </div>
+            <button class="btn btn-primary" onclick="reinitialiserStats()">
+                <i class="fas fa-sync-alt"></i> RÉINITIALISER LES STATS
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal de validation des inscriptions -->
+    <div id="validation-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Validation des inscriptions</h3>
+                <button class="modal-close" onclick="closeValidationModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-tabs">
+                <button class="tab-btn active" onclick="switchValidationTab('restaurants')">Restaurants</button>
+                <button class="tab-btn" onclick="switchValidationTab('livreurs')">Livreurs</button>
+            </div>
+            <div id="validation-restaurants" class="validation-list" style="display: block;"></div>
+            <div id="validation-livreurs" class="validation-list" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <div class="nav-item active" id="t-hom" onclick="switchTab('home')">
+            <span class="nav-icon"><i class="fas fa-home"></i></span>
+            Accueil
+        </div>
+        <div class="nav-item" id="t-car" onclick="switchTab('cart')">
+            <span class="nav-icon"><i class="fas fa-shopping-cart"></i></span>
+            Panier
+        </div>
+        <div class="nav-item" id="t-his" onclick="switchTab('history')">
+            <span class="nav-icon"><i class="fas fa-history"></i></span>
+            Historique
+        </div>
+        <div class="nav-item" id="t-pro" onclick="switchTab('profile')">
+            <span class="nav-icon"><i class="fas fa-user"></i></span>
+            Profil
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast" style="display: none;"></div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>
